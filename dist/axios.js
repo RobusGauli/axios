@@ -1,4 +1,3 @@
-/* axios v0.19.0-beta.1 | (c) 2018 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -554,7 +553,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	Axios.prototype.getUri = function getUri(config) {
 	  config = mergeConfig(this.defaults, config);
-	  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\?/, '');
+	  return buildURL(config.url, config.params, config.paramsSerializer);
 	};
 	
 	// Provide aliases for supported request methods
@@ -645,12 +644,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    serializedParams = parts.join('&');
 	  }
+	  // return serialized params if url is not provided
+	  if (!utils.isString(url)) {
+	    return serializedParams;
+	  }
 	
 	  if (serializedParams) {
+	    var hashmarkIndex = url.indexOf('#');
+	    if (hashmarkIndex !== -1) {
+	      url = url.slice(0, hashmarkIndex);
+	    }
+	
 	    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
 	  }
 	
-	  return url;
+	  return url.replace(/^\?/, '');
 	};
 
 
@@ -1219,8 +1227,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (code) {
 	    error.code = code;
 	  }
+	
 	  error.request = request;
 	  error.response = response;
+	  error.isAxiosError = true;
+	
 	  error.toJSON = function() {
 	    return {
 	      // Standard
